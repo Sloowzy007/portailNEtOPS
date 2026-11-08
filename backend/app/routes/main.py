@@ -1,4 +1,5 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, render_template
+from flask_login import login_required
 
 bp = Blueprint("main", __name__)
 
@@ -8,7 +9,8 @@ def health():
     return jsonify(status="ok")
 
 
-# TODO : login, logout, dashboard, CRUD equipements (milestone 2)
-@bp.get("/login")
-def login():
-    return "Page de connexion (a faire)", 200
+@bp.get("/")
+@login_required
+def index():
+    # TODO : tableau de bord synthetique (milestone 3)
+    return render_template("dashboard.html")

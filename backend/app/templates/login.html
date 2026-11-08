@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Connexion - NetOps{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 380px; margin: auto;">
+  <h1>Connexion</h1>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="login">Identifiant</label>
+    <input id="login" name="login" autocomplete="username" required autofocus>
+    <label for="password">Mot de passe</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required>
+    <button type="submit">Se connecter</button>
+  </form>
+</div>
+{% endblock %}
