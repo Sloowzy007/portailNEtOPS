@@ -1,0 +1,24 @@
+from flask import Flask
+
+from .config import Config
+from .extensions import db, login_manager, migrate
+
+
+def create_app(config_object=Config):
+    app = Flask(__name__)
+    app.config.from_object(config_object)
+
+    if not app.config.get("SECRET_KEY"):
+        raise RuntimeError("SECRET_KEY manquante : renseigner le fichier .env")
+
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login_manager.init_app(app)
+
+    from . import models  # noqa: F401  (enregistre les modeles)
+    from .cli import register_cli
+    from .routes.main import bp as main_bp
+
+    app.register_blueprint(main_bp)
+    register_cli(app)
+    return app
