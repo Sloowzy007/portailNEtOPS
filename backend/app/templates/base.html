@@ -30,6 +30,12 @@
     .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
     .row form { display: inline; }
     .row input, .row select { width: auto; }
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+    .kpi { display: flex; flex-direction: column; margin-bottom: 0; }
+    .kpi-value { font-size: 2rem; font-weight: 700; }
+    .ok-text { color: #03543f; }
+    .ko-text { color: #9b1c1c; }
+    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; }
   </style>
 </head>
 <body>
