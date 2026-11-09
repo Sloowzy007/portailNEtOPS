@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Modifier' if vlan else 'Ajouter' }} un VLAN - NetOps{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 500px; margin: auto;">
+  <h1>{{ 'Modifier' if vlan else 'Ajouter' }} un VLAN</h1>
+  {% if not sites %}
+    <p>Aucun site n'existe encore. <a href="{{ url_for('sites.list_sites') }}">Créez d'abord un site.</a></p>
+  {% else %}
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="site_id">Site *</label>
+    {% if vlan %}
+      <input id="site_id" value="{{ vlan.site.site_name }}" disabled>
+    {% else %}
+      <select id="site_id" name="site_id" required>
+        {% for s in sites %}<option value="{{ s.id }}" {{ 'selected' if data.get('site_id')|string == s.id|string }}>{{ s.site_name }}</option>{% endfor %}
+      </select>
+    {% endif %}
+    <label for="vlan_number">Numéro (1 à 4094) *</label>
+    <input id="vlan_number" name="vlan_number" type="number" min="1" max="4094" required value="{{ data.get('vlan_number') or '' }}">
+    <label for="vlan_name">Nom</label>
+    <input id="vlan_name" name="vlan_name" maxlength="50" placeholder="MGMT, VOIX…" value="{{ data.get('vlan_name') or '' }}">
+    <label for="subnet">Sous-réseau</label>
+    <input id="subnet" name="subnet" placeholder="10.0.10.0/24" value="{{ data.get('subnet') or '' }}">
+    <div class="row">
+      <button type="submit" class="btn-primary">Enregistrer</button>
+      <a class="btn" href="{{ url_for('vlans.list_vlans', site=(vlan.site_id if vlan else None)) }}">Annuler</a>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

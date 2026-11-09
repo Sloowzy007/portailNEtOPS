@@ -22,10 +22,12 @@ def create_app(config_object=Config):
     from .routes.devices import bp as devices_bp
     from .routes.main import bp as main_bp
     from .routes.sites import bp as sites_bp
+    from .routes.vlans import bp as vlans_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(devices_bp)
     app.register_blueprint(sites_bp)
+    app.register_blueprint(vlans_bp)
     register_cli(app)
     return app
