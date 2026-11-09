@@ -6,32 +6,55 @@
   <title>{% block title %}NetOps{% endblock %}</title>
   <style>
     body { font-family: system-ui, sans-serif; margin: 0; background: #f4f6f8; color: #1d2733; }
-    header { background: #1d2733; color: #fff; padding: .75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-    main { max-width: 900px; margin: 2rem auto; padding: 0 1rem; }
-    .card { background: #fff; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-    label { display: block; margin-top: 1rem; font-weight: 600; }
-    input { width: 100%; padding: .5rem; margin-top: .25rem; box-sizing: border-box; }
-    button { margin-top: 1rem; padding: .5rem 1rem; cursor: pointer; }
-    .flash { padding: .75rem; border-radius: 4px; margin-bottom: 1rem; background: #fde8e8; color: #9b1c1c; }
+    header { background: #1d2733; color: #fff; padding: .75rem 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: .5rem; }
+    header a { color: #cfe3ff; text-decoration: none; margin-right: 1rem; }
     header form { display: inline; }
+    main { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+    .card { background: #fff; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,.1); margin-bottom: 1rem; }
+    label { display: block; margin-top: 1rem; font-weight: 600; }
+    input, select, textarea { width: 100%; padding: .5rem; margin-top: .25rem; box-sizing: border-box; }
+    button, .btn { margin-top: 1rem; padding: .5rem 1rem; cursor: pointer; border: 1px solid #94a3b8; background: #fff; border-radius: 4px; text-decoration: none; color: inherit; display: inline-block; font-size: 1rem; }
+    .btn-primary { background: #2563eb; color: #fff; border-color: #2563eb; }
+    .btn-danger { background: #dc2626; color: #fff; border-color: #dc2626; }
+    .flash { padding: .75rem; border-radius: 4px; margin-bottom: 1rem; }
+    .flash.error { background: #fde8e8; color: #9b1c1c; }
+    .flash.success { background: #def7ec; color: #03543f; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: .5rem; border-bottom: 1px solid #e5e7eb; }
+    .table-wrap { overflow-x: auto; }
+    .badge { padding: .1rem .5rem; border-radius: 999px; font-size: .85rem; }
+    .badge.ok { background: #def7ec; color: #03543f; }
+    .badge.ko { background: #fde8e8; color: #9b1c1c; }
+    .muted { color: #6b7280; }
+    .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .75rem; align-items: end; }
+    .row { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+    .row form { display: inline; }
+    .row input, .row select { width: auto; }
   </style>
 </head>
 <body>
   <header>
-    <strong>NetOps</strong>
+    <nav>
+      <strong style="margin-right:1rem">NetOps</strong>
+      {% if current_user.is_authenticated %}
+      <a href="{{ url_for('main.index') }}">Tableau de bord</a>
+      <a href="{{ url_for('devices.list_devices') }}">Équipements</a>
+      <a href="{{ url_for('sites.list_sites') }}">Sites</a>
+      {% endif %}
+    </nav>
     {% if current_user.is_authenticated %}
     <span>
       {{ current_user.login }} ({{ current_user.role }})
       <form method="post" action="{{ url_for('auth.logout') }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit">Déconnexion</button>
+        <button type="submit" style="margin-top:0">Déconnexion</button>
       </form>
     </span>
     {% endif %}
   </header>
   <main>
     {% for category, message in get_flashed_messages(with_categories=true) %}
-      <div class="flash">{{ message }}</div>
+      <div class="flash {{ category }}">{{ message }}</div>
     {% endfor %}
     {% block content %}{% endblock %}
   </main>

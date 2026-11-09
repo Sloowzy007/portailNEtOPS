@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Équipements - NetOps{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="row" style="justify-content: space-between">
+    <h1 style="margin:0">Équipements ({{ pagination.total }})</h1>
+    {% if current_user.is_admin %}
+      <a class="btn btn-primary" style="margin-top:0" href="{{ url_for('devices.create') }}">Ajouter un équipement</a>
+    {% endif %}
+  </div>
+
+  <form method="get" class="filters" style="margin-top:1rem">
+    <div><label for="q">Recherche</label>
+      <input id="q" name="q" value="{{ q }}" placeholder="nom, IP, modèle…"></div>
+    <div><label for="type">Type</label>
+      <select id="type" name="type"><option value="">Tous</option>
+        {% for t in types %}<option value="{{ t }}" {{ 'selected' if t == device_type }}>{{ t }}</option>{% endfor %}
+      </select></div>
+    <div><label for="site">Site</label>
+      <select id="site" name="site"><option value="">Tous</option>
+        {% for s in sites %}<option value="{{ s.id }}" {{ 'selected' if s.id == site_id }}>{{ s.site_name }}</option>{% endfor %}
+      </select></div>
+    <div><label for="vendor">Constructeur</label>
+      <select id="vendor" name="vendor"><option value="">Tous</option>
+        {% for v in vendors %}<option value="{{ v }}" {{ 'selected' if v == vendor }}>{{ v }}</option>{% endfor %}
+      </select></div>
+    <div class="row">
+      <button type="submit" class="btn-primary" style="margin-top:0">Filtrer</button>
+      <a class="btn" style="margin-top:0" href="{{ url_for('devices.list_devices') }}">Réinitialiser</a>
+    </div>
+  </form>
+</div>
+
+<div class="card table-wrap">
+  {% if devices %}
+  <table>
+    <thead><tr><th>Nom</th><th>IP</th><th>Type</th><th>Constructeur</th><th>Modèle</th><th>Site</th><th>Dernier contrôle</th></tr></thead>
+    <tbody>
+    {% for d in devices %}
+      {% set c = last_checks.get(d.id) %}
+      <tr>
+        <td><a href="{{ url_for('devices.detail', device_id=d.id) }}">{{ d.hostname }}</a></td>
+        <td>{{ d.ip_address }}</td>
+        <td>{{ d.device_type }}</td>
+        <td>{{ d.vendor or '—' }}</td>
+        <td>{{ d.model or '—' }}</td>
+        <td>{{ d.site.site_name }}</td>
+        <td>
+          {% if c %}
+            <span class="badge {{ 'ok' if c.result == 'success' else 'ko' }}">{{ c.check_type }} : {{ c.result }}</span>
+            <span class="muted">{{ c.checked_at.strftime('%d/%m/%Y %H:%M') }}</span>
+          {% else %}<span class="muted">jamais</span>{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p class="muted">Aucun équipement ne correspond.</p>
+  {% endif %}
+
+  {% if pagination.pages > 1 %}
+  <p class="row">
+    {% if pagination.has_prev %}<a href="{{ url_for('devices.list_devices', page=pagination.prev_num, **args) }}">‹ Précédent</a>{% endif %}
+    <span>Page {{ pagination.page }} / {{ pagination.pages }}</span>
+    {% if pagination.has_next %}<a href="{{ url_for('devices.list_devices', page=pagination.next_num, **args) }}">Suivant ›</a>{% endif %}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

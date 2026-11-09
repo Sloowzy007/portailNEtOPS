@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Modifier' if device else 'Ajouter' }} un équipement - NetOps{% endblock %}
+{% block content %}
+<div class="card" style="max-width: 600px; margin: auto;">
+  <h1>{{ 'Modifier' if device else 'Ajouter' }} un équipement</h1>
+  {% if not sites %}
+    <p>Aucun site n'existe encore. <a href="{{ url_for('sites.list_sites') }}">Créez d'abord un site.</a></p>
+  {% else %}
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="hostname">Nom (hostname) *</label>
+    <input id="hostname" name="hostname" maxlength="100" required value="{{ data.get('hostname') or '' }}">
+    <label for="ip_address">Adresse IP *</label>
+    <input id="ip_address" name="ip_address" required value="{{ data.get('ip_address') or '' }}">
+    <label for="device_type">Type *</label>
+    <select id="device_type" name="device_type" required>
+      {% for t in types %}<option value="{{ t }}" {{ 'selected' if data.get('device_type') == t }}>{{ t }}</option>{% endfor %}
+    </select>
+    <label for="site_id">Site *</label>
+    <select id="site_id" name="site_id" required>
+      {% for s in sites %}<option value="{{ s.id }}" {{ 'selected' if data.get('site_id')|string == s.id|string }}>{{ s.site_name }}</option>{% endfor %}
+    </select>
+    <label for="device_role">Rôle</label>
+    <input id="device_role" name="device_role" maxlength="50" placeholder="cœur, accès, DMZ…" value="{{ data.get('device_role') or '' }}">
+    <label for="vendor">Constructeur</label>
+    <input id="vendor" name="vendor" maxlength="50" value="{{ data.get('vendor') or '' }}">
+    <label for="model">Modèle</label>
+    <input id="model" name="model" maxlength="100" value="{{ data.get('model') or '' }}">
+    <label for="os_version">Version OS</label>
+    <input id="os_version" name="os_version" maxlength="100" value="{{ data.get('os_version') or '' }}">
+    <label for="description">Description</label>
+    <textarea id="description" name="description" rows="3">{{ data.get('description') or '' }}</textarea>
+    <div class="row">
+      <button type="submit" class="btn-primary">Enregistrer</button>
+      <a class="btn" href="{{ url_for('devices.detail', device_id=device.id) if device else url_for('devices.list_devices') }}">Annuler</a>
+    </div>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

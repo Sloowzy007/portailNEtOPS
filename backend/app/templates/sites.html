@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Sites - NetOps{% endblock %}
+{% block content %}
+<div class="card table-wrap">
+  <h1 style="margin-top:0">Sites</h1>
+  {% if rows %}
+  <table>
+    <thead><tr><th>Nom</th><th>Localisation</th><th>Description</th><th>Équipements</th>{% if current_user.is_admin %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+    {% for site, count in rows %}
+      <tr>
+        <td>{{ site.site_name }}</td>
+        <td>{{ site.location or '—' }}</td>
+        <td>{{ site.description or '—' }}</td>
+        <td><a href="{{ url_for('devices.list_devices', site=site.id) }}">{{ count }}</a></td>
+        {% if current_user.is_admin %}
+        <td>
+          <form method="post" action="{{ url_for('sites.delete', site_id=site.id) }}"
+                onsubmit="return confirm('Supprimer ce site ?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-danger" style="margin-top:0">Supprimer</button>
+          </form>
+        </td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">Aucun site pour le moment.</p>{% endif %}
+</div>
+
+{% if current_user.is_admin %}
+<div class="card" style="max-width: 600px;">
+  <h2 style="margin-top:0">Ajouter un site</h2>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <label for="site_name">Nom *</label>
+    <input id="site_name" name="site_name" maxlength="100" required>
+    <label for="location">Localisation</label>
+    <input id="location" name="location" maxlength="200">
+    <label for="description">Description</label>
+    <textarea id="description" name="description" rows="2"></textarea>
+    <button type="submit" class="btn-primary">Ajouter</button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

@@ -11,6 +11,7 @@ def app():
     with app.app_context():
         db.create_all()
         yield app
+        db.session.remove()  # libere les verrous avant drop_all (PostgreSQL)
         db.drop_all()
 
 
