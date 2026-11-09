@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}{{ device.hostname }} - NetOps{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="row" style="justify-content: space-between">
+    <h1 style="margin:0">{{ device.hostname }}</h1>
+    {% if current_user.is_admin %}
+    <div class="row">
+      <a class="btn" style="margin-top:0" href="{{ url_for('devices.edit', device_id=device.id) }}">Modifier</a>
+      <form method="post" action="{{ url_for('devices.delete', device_id=device.id) }}"
+            onsubmit="return confirm('Supprimer cet équipement et son historique ?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn-danger" style="margin-top:0">Supprimer</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  <table style="margin-top:1rem">
+    <tr><th>Adresse IP</th><td>{{ device.ip_address }}</td></tr>
+    <tr><th>Type</th><td>{{ device.device_type }}</td></tr>
+    <tr><th>Rôle</th><td>{{ device.device_role or '—' }}</td></tr>
+    <tr><th>Constructeur</th><td>{{ device.vendor or '—' }}</td></tr>
+    <tr><th>Modèle</th><td>{{ device.model or '—' }}</td></tr>
+    <tr><th>Version OS</th><td>{{ device.os_version or '—' }}</td></tr>
+    <tr><th>Site</th><td>{{ device.site.site_name }}</td></tr>
+    <tr><th>Description</th><td>{{ device.description or '—' }}</td></tr>
+    <tr><th>Créé par</th><td>{{ device.created_by.login if device.created_by else '—' }}</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Contrôles</h2>
+  {% if current_user.is_admin %}
+  <form method="post" action="{{ url_for('devices.check', device_id=device.id) }}" class="row">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <select name="check_type">
+      {% for t in check_types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
+    </select>
+    <input name="port" type="number" min="1" max="65535" placeholder="Port (TCP)">
+    <button type="submit" class="btn-primary" style="margin-top:0">Lancer le contrôle</button>
+  </form>
+  {% endif %}
+  <div class="table-wrap">
+  {% if history %}
+  <table style="margin-top:1rem">
+    <thead><tr><th>Date</th><th>Type</th><th>Résultat</th><th>Temps (ms)</th><th>Détail</th><th>Lancé par</th></tr></thead>
+    <tbody>
+    {% for c in history %}
+      <tr>
+        <td>{{ c.checked_at.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+        <td>{{ c.check_type }}{% if c.port %}:{{ c.port }}{% endif %}</td>
+        <td><span class="badge {{ 'ok' if c.result == 'success' else 'ko' }}">{{ c.result }}</span></td>
+        <td>{{ c.response_time_ms if c.response_time_ms is not none else '—' }}</td>
+        <td>{{ c.message or '' }}</td>
+        <td>{{ c.user.login if c.user else 'auto' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">Aucun contrôle pour le moment.</p>{% endif %}
+  </div>
+</div>
+{% endblock %}
