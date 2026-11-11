@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, render_template
 from flask_login import login_required
 
+from ..stats import dashboard_stats
+
 bp = Blueprint("main", __name__)
 
 
@@ -12,5 +14,4 @@ def health():
 @bp.get("/")
 @login_required
 def index():
-    # TODO : tableau de bord synthetique (milestone 3)
-    return render_template("dashboard.html")
+    return render_template("dashboard.html", stats=dashboard_stats())
