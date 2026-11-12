@@ -1,10 +1,86 @@
 {% extends "base.html" %}
 {% block title %}Tableau de bord - NetOps{% endblock %}
 {% block content %}
-<div class="card">
-  <h1>Tableau de bord</h1>
-  <p>Bienvenue {{ current_user.login }}.</p>
-  <p><a href="{{ url_for('devices.list_devices') }}">Voir les équipements</a></p>
-  <p class="muted">Le tableau de bord de supervision sera ajouté ici.</p>
+<h1 style="margin-top:0">Tableau de bord</h1>
+
+<div class="kpis">
+  <div class="card kpi"><span class="kpi-value">{{ stats.total }}</span><span class="muted">Équipements</span></div>
+  <div class="card kpi"><span class="kpi-value ok-text">{{ stats.up }}</span><span class="muted">En ligne</span></div>
+  <div class="card kpi"><span class="kpi-value ko-text">{{ stats.down }}</span><span class="muted">Hors ligne</span></div>
+  <div class="card kpi"><span class="kpi-value">{{ stats.unknown }}</span><span class="muted">Jamais contrôlés</span></div>
+  <div class="card kpi">
+    <span class="kpi-value">{{ (stats.availability ~ ' %') if stats.availability is not none else '—' }}</span>
+    <span class="muted">Disponibilité</span>
+  </div>
 </div>
+<p class="muted">L'état d'un équipement correspond à son dernier contrôle.</p>
+
+{% if stats.total == 0 %}
+<div class="card">
+  <p>Aucun équipement pour le moment.
+  {% if current_user.is_admin %}<a href="{{ url_for('sites.list_sites') }}">Créez un site</a>, puis ajoutez des équipements.{% endif %}</p>
+</div>
+{% else %}
+
+<div class="card table-wrap">
+  <h2 style="margin-top:0">À surveiller</h2>
+  {% if stats.down_devices %}
+  <table>
+    <thead><tr><th>Équipement</th><th>IP</th><th>Contrôle</th><th>Détail</th><th>Date</th></tr></thead>
+    <tbody>
+    {% for device, c in stats.down_devices %}
+      <tr>
+        <td><a href="{{ url_for('devices.detail', device_id=device.id) }}">{{ device.hostname }}</a></td>
+        <td>{{ device.ip_address }}</td>
+        <td>{{ c.check_type }}{% if c.port %}:{{ c.port }}{% endif %}</td>
+        <td>{{ c.message or '' }}</td>
+        <td>{{ c.checked_at.strftime('%d/%m/%Y %H:%M') }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">Aucun équipement en échec.</p>{% endif %}
+</div>
+
+<div class="grid2">
+  <div class="card table-wrap">
+    <h2 style="margin-top:0">Par type</h2>
+    <table>
+      <thead><tr><th>Type</th><th>Total</th><th>Hors ligne</th></tr></thead>
+      <tbody>{% for t, n, d in stats.by_type %}
+        <tr><td>{{ t }}</td><td>{{ n }}</td><td>{{ d }}</td></tr>
+      {% endfor %}</tbody>
+    </table>
+  </div>
+  <div class="card table-wrap">
+    <h2 style="margin-top:0">Par site</h2>
+    <table>
+      <thead><tr><th>Site</th><th>Total</th><th>Hors ligne</th></tr></thead>
+      <tbody>{% for s, n, d in stats.by_site %}
+        <tr><td>{{ s }}</td><td>{{ n }}</td><td>{{ d }}</td></tr>
+      {% endfor %}</tbody>
+    </table>
+  </div>
+</div>
+
+<div class="card table-wrap">
+  <h2 style="margin-top:0">Derniers contrôles</h2>
+  {% if stats.recent %}
+  <table>
+    <thead><tr><th>Date</th><th>Équipement</th><th>Contrôle</th><th>Résultat</th><th>Lancé par</th></tr></thead>
+    <tbody>
+    {% for c in stats.recent %}
+      <tr>
+        <td>{{ c.checked_at.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+        <td><a href="{{ url_for('devices.detail', device_id=c.device.id) }}">{{ c.device.hostname }}</a></td>
+        <td>{{ c.check_type }}{% if c.port %}:{{ c.port }}{% endif %}</td>
+        <td><span class="badge {{ 'ok' if c.result == 'success' else 'ko' }}">{{ c.result }}</span></td>
+        <td>{{ c.user.login if c.user else 'auto' }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">Aucun contrôle effectué pour le moment.</p>{% endif %}
+</div>
+{% endif %}
 {% endblock %}
