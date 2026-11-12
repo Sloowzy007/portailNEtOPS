@@ -72,6 +72,7 @@ class Vlan(db.Model):
     site_id = db.Column(db.Integer, db.ForeignKey("sites.id", ondelete="CASCADE"), nullable=False)
 
     site = db.relationship("Site", back_populates="vlans")
+    device_links = db.relationship("DeviceVlan", back_populates="vlan", cascade="all, delete-orphan")
 
 
 class Device(db.Model):
@@ -133,7 +134,7 @@ class DeviceVlan(db.Model):
     is_management = db.Column(db.Boolean, nullable=False, default=False)
 
     device = db.relationship("Device", back_populates="vlan_links")
-    vlan = db.relationship("Vlan")
+    vlan = db.relationship("Vlan", back_populates="device_links")
 
 
 class Check(db.Model):

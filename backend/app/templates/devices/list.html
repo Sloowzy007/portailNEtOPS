@@ -24,6 +24,8 @@
       <select id="vendor" name="vendor"><option value="">Tous</option>
         {% for v in vendors %}<option value="{{ v }}" {{ 'selected' if v == vendor }}>{{ v }}</option>{% endfor %}
       </select></div>
+    <div><label for="vlan">VLAN</label>
+      <input id="vlan" name="vlan" type="number" min="1" max="4094" value="{{ vlan or '' }}"></div>
     <div class="row">
       <button type="submit" class="btn-primary" style="margin-top:0">Filtrer</button>
       <a class="btn" style="margin-top:0" href="{{ url_for('devices.list_devices') }}">Réinitialiser</a>
@@ -34,7 +36,7 @@
 <div class="card table-wrap">
   {% if devices %}
   <table>
-    <thead><tr><th>Nom</th><th>IP</th><th>Type</th><th>Constructeur</th><th>Modèle</th><th>Site</th><th>Dernier contrôle</th></tr></thead>
+    <thead><tr><th>Nom</th><th>IP</th><th>Type</th><th>Constructeur</th><th>Modèle</th><th>Site</th><th>VLAN</th><th>Dernier contrôle</th></tr></thead>
     <tbody>
     {% for d in devices %}
       {% set c = last_checks.get(d.id) %}
@@ -45,6 +47,7 @@
         <td>{{ d.vendor or '—' }}</td>
         <td>{{ d.model or '—' }}</td>
         <td>{{ d.site.site_name }}</td>
+        <td>{% for l in d.vlan_links|sort(attribute='vlan.vlan_number') %}{{ l.vlan.vlan_number }}{% if l.is_management %}*{% endif %}{% if not loop.last %}, {% endif %}{% else %}—{% endfor %}</td>
         <td>
           {% if c %}
             <span class="badge {{ 'ok' if c.result == 'success' else 'ko' }}">{{ c.check_type }} : {{ c.result }}</span>
@@ -59,6 +62,7 @@
     <p class="muted">Aucun équipement ne correspond.</p>
   {% endif %}
 
+  <p class="muted">* VLAN d'administration</p>
   {% if pagination.pages > 1 %}
   <p class="row">
     {% if pagination.has_prev %}<a href="{{ url_for('devices.list_devices', page=pagination.prev_num, **args) }}">‹ Précédent</a>{% endif %}

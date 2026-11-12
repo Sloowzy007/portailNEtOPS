@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}VLAN - NetOps{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="row" style="justify-content: space-between">
+    <h1 style="margin:0">VLAN</h1>
+    {% if current_user.is_admin %}
+      <a class="btn btn-primary" style="margin-top:0" href="{{ url_for('vlans.create', site=site_id) }}">Ajouter un VLAN</a>
+    {% endif %}
+  </div>
+  <form method="get" class="row" style="margin-top:1rem">
+    <label for="site" style="margin:0">Site</label>
+    <select id="site" name="site">
+      <option value="">Tous</option>
+      {% for s in sites %}<option value="{{ s.id }}" {{ 'selected' if s.id == site_id }}>{{ s.site_name }}</option>{% endfor %}
+    </select>
+    <button type="submit" style="margin-top:0">Filtrer</button>
+  </form>
+</div>
+
+<div class="card table-wrap">
+  {% if rows %}
+  <table>
+    <thead><tr><th>Site</th><th>N°</th><th>Nom</th><th>Sous-réseau</th><th>Équipements</th>{% if current_user.is_admin %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+    {% for vlan, count in rows %}
+      <tr>
+        <td>{{ vlan.site.site_name }}</td>
+        <td>{{ vlan.vlan_number }}</td>
+        <td>{{ vlan.vlan_name or '—' }}</td>
+        <td>{{ vlan.subnet or '—' }}</td>
+        <td><a href="{{ url_for('devices.list_devices', site=vlan.site_id, vlan=vlan.vlan_number) }}">{{ count }}</a></td>
+        {% if current_user.is_admin %}
+        <td class="row">
+          <a class="btn" style="margin-top:0" href="{{ url_for('vlans.edit', vlan_id=vlan.id) }}">Modifier</a>
+          <form method="post" action="{{ url_for('vlans.delete', vlan_id=vlan.id) }}"
+                onsubmit="return confirm('Supprimer ce VLAN ? Il sera retiré des équipements associés.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-danger" style="margin-top:0">Supprimer</button>
+          </form>
+        </td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">Aucun VLAN pour le moment.</p>{% endif %}
+</div>
+{% endblock %}

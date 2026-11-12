@@ -28,6 +28,57 @@
   </table>
 </div>
 
+<div class="card table-wrap">
+  <h2 style="margin-top:0">VLAN</h2>
+  {% if links %}
+  <table>
+    <thead><tr><th>VLAN</th><th>Nom</th><th>Sous-réseau</th><th>Interface</th><th>Administration</th>{% if current_user.is_admin %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+    {% for l in links %}
+      <tr>
+        <td>{{ l.vlan.vlan_number }}</td>
+        <td>{{ l.vlan.vlan_name or '—' }}</td>
+        <td>{{ l.vlan.subnet or '—' }}</td>
+        <td>{{ l.interface_name or '—' }}</td>
+        <td>{% if l.is_management %}<span class="badge ok">oui</span>{% else %}non{% endif %}</td>
+        {% if current_user.is_admin %}
+        <td class="row">
+          {% if not l.is_management %}
+          <form method="post" action="{{ url_for('devices.set_management_vlan', device_id=device.id, link_id=l.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" style="margin-top:0">Définir comme administration</button>
+          </form>
+          {% endif %}
+          <form method="post" action="{{ url_for('devices.remove_vlan', device_id=device.id, link_id=l.id) }}"
+                onsubmit="return confirm('Retirer ce VLAN de l\'équipement ?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-danger" style="margin-top:0">Retirer</button>
+          </form>
+        </td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">Aucun VLAN associé.</p>{% endif %}
+
+  {% if current_user.is_admin %}
+    {% if available_vlans %}
+    <form method="post" action="{{ url_for('devices.add_vlan', device_id=device.id) }}" class="row" style="margin-top:1rem">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <select name="vlan_id" required>
+        {% for v in available_vlans %}<option value="{{ v.id }}">{{ v.vlan_number }}{% if v.vlan_name %} - {{ v.vlan_name }}{% endif %}</option>{% endfor %}
+      </select>
+      <input name="interface_name" maxlength="50" placeholder="Interface (Gi0/1…)">
+      <label class="row" style="margin:0;font-weight:normal"><input type="checkbox" name="is_management" style="width:auto"> VLAN d'administration</label>
+      <button type="submit" class="btn-primary" style="margin-top:0">Associer</button>
+    </form>
+    {% else %}
+    <p class="muted">Aucun autre VLAN disponible sur ce site. <a href="{{ url_for('vlans.create', site=device.site_id) }}">Créer un VLAN</a></p>
+    {% endif %}
+  {% endif %}
+</div>
+
 <div class="card">
   <h2 style="margin-top:0">Contrôles</h2>
   {% if current_user.is_admin %}

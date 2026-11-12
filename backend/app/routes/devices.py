@@ -1,16 +1,17 @@
 """Equipements : liste (recherche/filtres), fiche, creation, modification, suppression, controles."""
 import ipaddress
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
-from sqlalchemy import String, and_, cast, func, or_, select
+from sqlalchemy import String, and_, cast, func, or_, select, update
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload, selectinload
 
 from ..audit import log_action
 from ..auth import admin_required
 from ..checks import run_check
 from ..extensions import db
-from ..models import Check, Device, Site
+from ..models import Check, Device, DeviceVlan, Site, Vlan
 
 bp = Blueprint("devices", __name__, url_prefix="/devices")
 
@@ -43,7 +44,7 @@ def _parse_form(form):
     if raw["device_type"] not in DEVICE_TYPES:
         errors.append("Type d'équipement invalide.")
 
-    site = db.session.get(Site, int(raw["site_id"])) if raw["site_id"].isdigit() else None
+    site = db.session.get(Site, int(raw["site_id"])) if raw["site_id"].isdecimal() else None
     if site is None:
         errors.append("Site invalide.")
 
@@ -96,9 +97,14 @@ def list_devices():
     device_type = request.args.get("type", "")
     site_id = request.args.get("site", type=int)
     vendor = request.args.get("vendor", "").strip()
+    vlan = request.args.get("vlan", type=int)
     page = request.args.get("page", 1, type=int)
 
-    stmt = select(Device).order_by(Device.hostname)
+    stmt = (
+        select(Device)
+        .options(joinedload(Device.site), selectinload(Device.vlan_links).joinedload(DeviceVlan.vlan))
+        .order_by(Device.hostname)
+    )
     if q:
         stmt = stmt.where(or_(
             Device.hostname.icontains(q, autoescape=True),
@@ -113,19 +119,21 @@ def list_devices():
         stmt = stmt.where(Device.site_id == site_id)
     if vendor:
         stmt = stmt.where(Device.vendor == vendor)
+    if vlan:
+        stmt = stmt.where(Device.vlan_links.any(DeviceVlan.vlan.has(Vlan.vlan_number == vlan)))
 
     pagination = db.paginate(stmt, page=page, per_page=PER_PAGE, error_out=False)
     vendors = db.session.scalars(
         select(Device.vendor).where(Device.vendor.is_not(None)).distinct().order_by(Device.vendor)
     ).all()
     sites = db.session.scalars(select(Site).order_by(Site.site_name)).all()
-    args = {k: v for k, v in {"q": q, "type": device_type, "site": site_id, "vendor": vendor}.items() if v}
+    args = {k: v for k, v in {"q": q, "type": device_type, "site": site_id, "vendor": vendor, "vlan": vlan}.items() if v}
 
     return render_template(
         "devices/list.html", pagination=pagination, devices=pagination.items,
         last_checks=_last_checks([d.id for d in pagination.items]),
         types=DEVICE_TYPES, sites=sites, vendors=vendors, args=args,
-        q=q, device_type=device_type, site_id=site_id, vendor=vendor,
+        q=q, device_type=device_type, site_id=site_id, vendor=vendor, vlan=vlan,
     )
 
 
@@ -136,7 +144,15 @@ def detail(device_id):
     history = db.session.scalars(
         select(Check).where(Check.device_id == device.id).order_by(Check.checked_at.desc()).limit(20)
     ).all()
-    return render_template("devices/detail.html", device=device, history=history, check_types=CHECK_TYPES)
+    links = sorted(device.vlan_links, key=lambda link: link.vlan.vlan_number)
+    used = [link.vlan_id for link in links]
+    available_vlans = db.session.scalars(
+        select(Vlan).where(Vlan.site_id == device.site_id, Vlan.id.not_in(used)).order_by(Vlan.vlan_number)
+    ).all()
+    return render_template(
+        "devices/detail.html", device=device, history=history, check_types=CHECK_TYPES,
+        links=links, available_vlans=available_vlans,
+    )
 
 
 @bp.route("/new", methods=["GET", "POST"])
@@ -171,6 +187,8 @@ def edit(device_id):
         return _render_form(device, {k: getattr(device, k) for k in FIELDS})
 
     data, errors = _parse_form(request.form)
+    if not errors and data["site_id"] != device.site_id and device.vlan_links:
+        errors = ["Retirez d'abord les VLAN de l'équipement avant de changer son site."]
     if not errors:
         errors = _duplicate_errors(data, exclude_id=device.id)
     if errors:
@@ -213,10 +231,75 @@ def check(device_id):
 
     if check_type not in CHECK_TYPES:
         flash("Type de contrôle invalide.", "error")
-    elif check_type == "tcp" and not (port.isdigit() and 1 <= int(port) <= 65535):
+    elif check_type == "tcp" and not (port.isdecimal() and 1 <= int(port) <= 65535):
         flash("Port TCP invalide (1 à 65535).", "error")
     else:
         result = run_check(device, check_type, port=int(port) if check_type == "tcp" else None, user=current_user)
         flash(f"Contrôle {check_type} : {result.result} - {result.message}",
               "success" if result.result == "success" else "error")
     return redirect(url_for("devices.detail", device_id=device.id))
+
+
+def _vlan_link_or_404(device_id, link_id):
+    link = db.get_or_404(DeviceVlan, link_id)
+    if link.device_id != device_id:
+        abort(404)
+    return link
+
+
+def _clear_management(device_id):
+    db.session.execute(
+        update(DeviceVlan).where(DeviceVlan.device_id == device_id, DeviceVlan.is_management.is_(True))
+        .values(is_management=False)
+    )
+
+
+@bp.post("/<int:device_id>/vlans")
+@admin_required
+def add_vlan(device_id):
+    device = db.get_or_404(Device, device_id)
+    vlan_id = request.form.get("vlan_id", "").strip()
+    vlan = db.session.get(Vlan, int(vlan_id)) if vlan_id.isdecimal() else None
+    interface = request.form.get("interface_name", "").strip()
+    is_management = request.form.get("is_management") == "on"
+
+    if vlan is None or vlan.site_id != device.site_id:
+        flash("VLAN invalide pour le site de cet équipement.", "error")
+    elif any(link.vlan_id == vlan.id for link in device.vlan_links):
+        flash("Cet équipement est déjà dans ce VLAN.", "error")
+    elif len(interface) > 50:
+        flash("Le nom d'interface dépasse 50 caractères.", "error")
+    else:
+        if is_management:
+            _clear_management(device.id)
+        db.session.add(DeviceVlan(
+            device_id=device.id, vlan_id=vlan.id, interface_name=interface or None, is_management=is_management,
+        ))
+        log_action("update", "devices", device.id, {"vlan": {"ajoute": vlan.vlan_number}})
+        db.session.commit()
+        flash(f"VLAN {vlan.vlan_number} associé.", "success")
+    return redirect(url_for("devices.detail", device_id=device.id))
+
+
+@bp.post("/<int:device_id>/vlans/<int:link_id>/delete")
+@admin_required
+def remove_vlan(device_id, link_id):
+    link = _vlan_link_or_404(device_id, link_id)
+    number = link.vlan.vlan_number
+    log_action("update", "devices", device_id, {"vlan": {"retire": number}})
+    db.session.delete(link)
+    db.session.commit()
+    flash(f"VLAN {number} retiré.", "success")
+    return redirect(url_for("devices.detail", device_id=device_id))
+
+
+@bp.post("/<int:device_id>/vlans/<int:link_id>/management")
+@admin_required
+def set_management_vlan(device_id, link_id):
+    link = _vlan_link_or_404(device_id, link_id)
+    _clear_management(device_id)  # un seul VLAN d'administration par équipement
+    link.is_management = True
+    log_action("update", "devices", device_id, {"vlan_administration": {"apres": link.vlan.vlan_number}})
+    db.session.commit()
+    flash(f"VLAN {link.vlan.vlan_number} défini comme VLAN d'administration.", "success")
+    return redirect(url_for("devices.detail", device_id=device_id))
