@@ -56,7 +56,7 @@ def login():
         db.session.commit()
         flash("Identifiant ou mot de passe incorrect.", "error")
 
-    return render_template("login.html")
+    return render_template("auth/login.html")
 
 
 @bp.post("/logout")
