@@ -2,11 +2,10 @@
 
 ## Vue d'ensemble
 
-```text
-Navigateur  --HTTP-->  [ web : Flask + gunicorn ]  --SQL-->  [ db : PostgreSQL ]
-                                |
-                                +--> contrôles réseau (ping, DNS, TCP) --> équipements supervisés
-```
+<figure markdown>
+  ![Architecture du Portail NetOps](images/architecture.png){ width="900" }
+  <figcaption>Figure 1 : architecture du portail</figcaption>
+</figure>
 
 L'application tourne dans deux conteneurs Docker (`web` et `db`) décrits dans `docker-compose.yml`. Les données de la base sont conservées dans un volume Docker.
 
