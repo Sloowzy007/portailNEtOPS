@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Tableau de bord - NetOps{% endblock %}
 {% block content %}
-<h1 style="margin-top:0">Tableau de bord</h1>
+<h1 class="page-title">Tableau de bord</h1>
 
 <div class="kpis">
   <div class="card kpi"><span class="kpi-value">{{ stats.total }}</span><span class="muted">Équipements</span></div>
@@ -23,7 +23,7 @@
 {% else %}
 
 <div class="card table-wrap">
-  <h2 style="margin-top:0">À surveiller</h2>
+  <h2>À surveiller</h2>
   {% if stats.down_devices %}
   <table>
     <thead><tr><th>Équipement</th><th>IP</th><th>Contrôle</th><th>Détail</th><th>Date</th></tr></thead>
@@ -42,9 +42,9 @@
   {% else %}<p class="muted">Aucun équipement en échec.</p>{% endif %}
 </div>
 
-<div class="grid2">
+<div class="grid-2">
   <div class="card table-wrap">
-    <h2 style="margin-top:0">Par type</h2>
+    <h2>Par type</h2>
     <table>
       <thead><tr><th>Type</th><th>Total</th><th>Hors ligne</th></tr></thead>
       <tbody>{% for t, n, d in stats.by_type %}
@@ -53,7 +53,7 @@
     </table>
   </div>
   <div class="card table-wrap">
-    <h2 style="margin-top:0">Par site</h2>
+    <h2>Par site</h2>
     <table>
       <thead><tr><th>Site</th><th>Total</th><th>Hors ligne</th></tr></thead>
       <tbody>{% for s, n, d in stats.by_site %}
@@ -64,7 +64,7 @@
 </div>
 
 <div class="card table-wrap">
-  <h2 style="margin-top:0">Derniers contrôles</h2>
+  <h2>Derniers contrôles</h2>
   {% if stats.recent %}
   <table>
     <thead><tr><th>Date</th><th>Équipement</th><th>Contrôle</th><th>Résultat</th><th>Lancé par</th></tr></thead>

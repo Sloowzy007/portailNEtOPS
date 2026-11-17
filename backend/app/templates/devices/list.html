@@ -2,14 +2,14 @@
 {% block title %}Équipements - NetOps{% endblock %}
 {% block content %}
 <div class="card">
-  <div class="row" style="justify-content: space-between">
-    <h1 style="margin:0">Équipements ({{ pagination.total }})</h1>
+  <div class="row row-between">
+    <h1>Équipements ({{ pagination.total }})</h1>
     {% if current_user.is_admin %}
-      <a class="btn btn-primary" style="margin-top:0" href="{{ url_for('devices.create') }}">Ajouter un équipement</a>
+      <a class="btn btn-primary" href="{{ url_for('devices.create') }}">Ajouter un équipement</a>
     {% endif %}
   </div>
 
-  <form method="get" class="filters" style="margin-top:1rem">
+  <form method="get" class="filters">
     <div><label for="q">Recherche</label>
       <input id="q" name="q" value="{{ q }}" placeholder="nom, IP, modèle…"></div>
     <div><label for="type">Type</label>
@@ -27,8 +27,8 @@
     <div><label for="vlan">VLAN</label>
       <input id="vlan" name="vlan" type="number" min="1" max="4094" value="{{ vlan or '' }}"></div>
     <div class="row">
-      <button type="submit" class="btn-primary" style="margin-top:0">Filtrer</button>
-      <a class="btn" style="margin-top:0" href="{{ url_for('devices.list_devices') }}">Réinitialiser</a>
+      <button type="submit" class="btn-primary">Filtrer</button>
+      <a class="btn" href="{{ url_for('devices.list_devices') }}">Réinitialiser</a>
     </div>
   </form>
 </div>

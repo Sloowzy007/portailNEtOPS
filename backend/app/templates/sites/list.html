@@ -2,7 +2,7 @@
 {% block title %}Sites - NetOps{% endblock %}
 {% block content %}
 <div class="card table-wrap">
-  <h1 style="margin-top:0">Sites</h1>
+  <h1>Sites</h1>
   {% if rows %}
   <table>
     <thead><tr><th>Nom</th><th>Localisation</th><th>Description</th><th>Équipements</th>{% if current_user.is_admin %}<th></th>{% endif %}</tr></thead>
@@ -16,9 +16,9 @@
         {% if current_user.is_admin %}
         <td>
           <form method="post" action="{{ url_for('sites.delete', site_id=site.id) }}"
-                onsubmit="return confirm('Supprimer ce site ?');">
+                data-confirm="Supprimer ce site ?">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn-danger" style="margin-top:0">Supprimer</button>
+            <button type="submit" class="btn-danger">Supprimer</button>
           </form>
         </td>
         {% endif %}
@@ -30,8 +30,8 @@
 </div>
 
 {% if current_user.is_admin %}
-<div class="card" style="max-width: 600px;">
-  <h2 style="margin-top:0">Ajouter un site</h2>
+<div class="card card-md">
+  <h2>Ajouter un site</h2>
   <form method="post">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label for="site_name">Nom *</label>
@@ -40,7 +40,9 @@
     <input id="location" name="location" maxlength="200">
     <label for="description">Description</label>
     <textarea id="description" name="description" rows="2"></textarea>
-    <button type="submit" class="btn-primary">Ajouter</button>
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Ajouter</button>
+    </div>
   </form>
 </div>
 {% endif %}

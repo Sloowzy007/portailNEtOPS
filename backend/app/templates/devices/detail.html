@@ -2,20 +2,20 @@
 {% block title %}{{ device.hostname }} - NetOps{% endblock %}
 {% block content %}
 <div class="card">
-  <div class="row" style="justify-content: space-between">
-    <h1 style="margin:0">{{ device.hostname }}</h1>
+  <div class="row row-between">
+    <h1>{{ device.hostname }}</h1>
     {% if current_user.is_admin %}
     <div class="row">
-      <a class="btn" style="margin-top:0" href="{{ url_for('devices.edit', device_id=device.id) }}">Modifier</a>
+      <a class="btn" href="{{ url_for('devices.edit', device_id=device.id) }}">Modifier</a>
       <form method="post" action="{{ url_for('devices.delete', device_id=device.id) }}"
-            onsubmit="return confirm('Supprimer cet équipement et son historique ?');">
+            data-confirm="Supprimer cet équipement et son historique ?">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn-danger" style="margin-top:0">Supprimer</button>
+        <button type="submit" class="btn-danger">Supprimer</button>
       </form>
     </div>
     {% endif %}
   </div>
-  <table style="margin-top:1rem">
+  <table class="table-spaced">
     <tr><th>Adresse IP</th><td>{{ device.ip_address }}</td></tr>
     <tr><th>Type</th><td>{{ device.device_type }}</td></tr>
     <tr><th>Rôle</th><td>{{ device.device_role or '—' }}</td></tr>
@@ -29,7 +29,7 @@
 </div>
 
 <div class="card table-wrap">
-  <h2 style="margin-top:0">VLAN</h2>
+  <h2>VLAN</h2>
   {% if links %}
   <table>
     <thead><tr><th>VLAN</th><th>Nom</th><th>Sous-réseau</th><th>Interface</th><th>Administration</th>{% if current_user.is_admin %}<th></th>{% endif %}</tr></thead>
@@ -46,13 +46,13 @@
           {% if not l.is_management %}
           <form method="post" action="{{ url_for('devices.set_management_vlan', device_id=device.id, link_id=l.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" style="margin-top:0">Définir comme administration</button>
+            <button type="submit">Définir comme administration</button>
           </form>
           {% endif %}
           <form method="post" action="{{ url_for('devices.remove_vlan', device_id=device.id, link_id=l.id) }}"
-                onsubmit="return confirm('Retirer ce VLAN de l\'équipement ?');">
+                data-confirm="Retirer ce VLAN de l'équipement ?">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn-danger" style="margin-top:0">Retirer</button>
+            <button type="submit" class="btn-danger">Retirer</button>
           </form>
         </td>
         {% endif %}
@@ -64,14 +64,14 @@
 
   {% if current_user.is_admin %}
     {% if available_vlans %}
-    <form method="post" action="{{ url_for('devices.add_vlan', device_id=device.id) }}" class="row" style="margin-top:1rem">
+    <form method="post" action="{{ url_for('devices.add_vlan', device_id=device.id) }}" class="row row-spaced">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <select name="vlan_id" required>
         {% for v in available_vlans %}<option value="{{ v.id }}">{{ v.vlan_number }}{% if v.vlan_name %} - {{ v.vlan_name }}{% endif %}</option>{% endfor %}
       </select>
       <input name="interface_name" maxlength="50" placeholder="Interface (Gi0/1…)">
-      <label class="row" style="margin:0;font-weight:normal"><input type="checkbox" name="is_management" style="width:auto"> VLAN d'administration</label>
-      <button type="submit" class="btn-primary" style="margin-top:0">Associer</button>
+      <label class="checkbox-label"><input type="checkbox" name="is_management"> VLAN d'administration</label>
+      <button type="submit" class="btn-primary">Associer</button>
     </form>
     {% else %}
     <p class="muted">Aucun autre VLAN disponible sur ce site. <a href="{{ url_for('vlans.create', site=device.site_id) }}">Créer un VLAN</a></p>
@@ -80,7 +80,7 @@
 </div>
 
 <div class="card">
-  <h2 style="margin-top:0">Contrôles</h2>
+  <h2>Contrôles</h2>
   {% if current_user.is_admin %}
   <form method="post" action="{{ url_for('devices.check', device_id=device.id) }}" class="row">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -88,12 +88,12 @@
       {% for t in check_types %}<option value="{{ t }}">{{ t }}</option>{% endfor %}
     </select>
     <input name="port" type="number" min="1" max="65535" placeholder="Port (TCP)">
-    <button type="submit" class="btn-primary" style="margin-top:0">Lancer le contrôle</button>
+    <button type="submit" class="btn-primary">Lancer le contrôle</button>
   </form>
   {% endif %}
   <div class="table-wrap">
   {% if history %}
-  <table style="margin-top:1rem">
+  <table class="table-spaced">
     <thead><tr><th>Date</th><th>Type</th><th>Résultat</th><th>Temps (ms)</th><th>Détail</th><th>Lancé par</th></tr></thead>
     <tbody>
     {% for c in history %}

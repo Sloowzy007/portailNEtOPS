@@ -77,7 +77,7 @@ def list_vlans():
         stmt = stmt.where(Vlan.site_id == site_id)
     rows = db.session.execute(stmt).all()
     sites = db.session.scalars(select(Site).order_by(Site.site_name)).all()
-    return render_template("vlans.html", rows=rows, sites=sites, site_id=site_id)
+    return render_template("vlans/list.html", rows=rows, sites=sites, site_id=site_id)
 
 
 @bp.route("/new", methods=["GET", "POST"])

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ 'Modifier' if vlan else 'Ajouter' }} un VLAN - NetOps{% endblock %}
 {% block content %}
-<div class="card" style="max-width: 500px; margin: auto;">
+<div class="card card-md">
   <h1>{{ 'Modifier' if vlan else 'Ajouter' }} un VLAN</h1>
   {% if not sites %}
     <p>Aucun site n'existe encore. <a href="{{ url_for('sites.list_sites') }}">Créez d'abord un site.</a></p>
@@ -22,7 +22,7 @@
     <input id="vlan_name" name="vlan_name" maxlength="50" placeholder="MGMT, VOIX…" value="{{ data.get('vlan_name') or '' }}">
     <label for="subnet">Sous-réseau</label>
     <input id="subnet" name="subnet" placeholder="10.0.10.0/24" value="{{ data.get('subnet') or '' }}">
-    <div class="row">
+    <div class="row form-actions">
       <button type="submit" class="btn-primary">Enregistrer</button>
       <a class="btn" href="{{ url_for('vlans.list_vlans', site=(vlan.site_id if vlan else None)) }}">Annuler</a>
     </div>

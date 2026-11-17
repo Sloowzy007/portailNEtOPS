@@ -18,7 +18,7 @@ def list_sites():
     rows = db.session.execute(
         select(Site, func.count(Device.id)).outerjoin(Device).group_by(Site.id).order_by(Site.site_name)
     ).all()
-    return render_template("sites.html", rows=rows)
+    return render_template("sites/list.html", rows=rows)
 
 
 @bp.post("/")

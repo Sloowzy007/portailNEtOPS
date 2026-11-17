@@ -1,0 +1,20 @@
+<header class="site-header">
+  <nav>
+    <strong class="brand">NetOps</strong>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('main.index') }}"{% if request.endpoint == 'main.index' %} aria-current="page"{% endif %}>Tableau de bord</a>
+    <a href="{{ url_for('devices.list_devices') }}"{% if request.blueprint == 'devices' %} aria-current="page"{% endif %}>Équipements</a>
+    <a href="{{ url_for('sites.list_sites') }}"{% if request.blueprint == 'sites' %} aria-current="page"{% endif %}>Sites</a>
+    <a href="{{ url_for('vlans.list_vlans') }}"{% if request.blueprint == 'vlans' %} aria-current="page"{% endif %}>VLAN</a>
+    {% endif %}
+  </nav>
+  {% if current_user.is_authenticated %}
+  <div>
+    {{ current_user.login }} ({{ current_user.role }})
+    <form method="post" action="{{ url_for('auth.logout') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit">Déconnexion</button>
+    </form>
+  </div>
+  {% endif %}
+</header>

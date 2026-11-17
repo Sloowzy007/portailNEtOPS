@@ -1,0 +1,613 @@
+/* ==========================================================================
+   NetOps - feuille de style unique de l'application
+   Tout l'aspect visuel est ici : les pages HTML ne contiennent aucun style.
+
+   Sommaire
+     1. Variables (couleurs, rayons, ombres)
+     2. Base de la page et typographie
+     3. En-tête et navigation
+     4. Mise en page (conteneur, lignes, grilles)
+     5. Composants : cartes, boutons, tableaux, badges, messages
+     6. Formulaires
+     7. Tableau de bord
+     8. Utilitaires
+     9. Adaptation aux petits écrans
+   ========================================================================== */
+
+/* 1. Variables ------------------------------------------------------------
+   Pour changer l'identité visuelle, modifier ces valeurs : tout le reste suit. */
+:root {
+  --color-bg: #f1f5f9;
+  --color-surface: #ffffff;
+  --color-text: #0f172a;
+  --color-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+  --color-row-hover: #f8fafc;
+
+  --color-header-from: #0f172a;
+  --color-header-to: #1e293b;
+  --color-header-text: #cbd5e1;
+  --color-accent: #38bdf8;
+
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-danger: #dc2626;
+  --color-danger-dark: #b91c1c;
+
+  --color-ok: #15803d;
+  --color-ok-bg: #dcfce7;
+  --color-ko: #b91c1c;
+  --color-ko-bg: #fee2e2;
+  --color-neutral: #475569;
+  --color-neutral-bg: #e2e8f0;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.1);
+  --gap: 1rem;
+  --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+
+/* 2. Base de la page et typographie -------------------------------------- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+main {
+  max-width: 1100px;
+  margin: 1.75rem auto 3rem;
+  padding: 0 1.25rem;
+}
+
+h1 {
+  font-size: 1.6rem;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--gap);
+}
+
+h2 {
+  font-size: 1.15rem;
+  font-weight: 650;
+  margin: 0 0 0.75rem;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.page-title {
+  margin-top: 0;
+}
+
+/* 3. En-tête et navigation ------------------------------------------------ */
+.site-header {
+  background: linear-gradient(90deg, var(--color-header-from), var(--color-header-to));
+  border-bottom: 3px solid var(--color-accent);
+  color: var(--color-header-text);
+  padding: 0 1.5rem;
+  min-height: 3.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+}
+
+.site-header nav {
+  display: flex;
+  align-items: stretch;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 1.25rem;
+  color: #fff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Petit pictogramme dessiné en CSS devant le nom du site */
+.brand::before {
+  content: "";
+  width: 0.85rem;
+  height: 0.85rem;
+  border-radius: 3px;
+  background: var(--color-accent);
+  box-shadow: 0.4rem 0.4rem 0 -0.1rem rgba(56, 189, 248, 0.45);
+}
+
+.site-header nav a {
+  display: flex;
+  align-items: center;
+  padding: 0 0.85rem;
+  min-height: 3.5rem;
+  color: var(--color-header-text);
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -3px;
+  transition: color 0.15s, background 0.15s;
+}
+
+.site-header nav a:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Page courante : repérée par aria-current="page" dans le HTML */
+.site-header nav a[aria-current="page"] {
+  color: #fff;
+  border-bottom-color: var(--color-accent);
+}
+
+.site-header > div {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.site-header form {
+  display: inline;
+}
+
+.site-header button {
+  background: transparent;
+  color: var(--color-header-text);
+  border-color: #475569;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.site-header button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-color: #94a3b8;
+}
+
+/* 4. Mise en page -------------------------------------------------------- */
+.row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.row form {
+  display: inline;
+}
+
+.row input,
+.row select {
+  width: auto;
+}
+
+.row > label {
+  margin: 0;
+}
+
+.row-between {
+  justify-content: space-between;
+}
+
+.row-between h1 {
+  margin: 0;
+}
+
+.row-spaced {
+  margin-top: var(--gap);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: var(--gap);
+}
+
+.grid-2 > .card {
+  margin-bottom: 0;
+}
+
+.grid-2 + .card,
+.grid-2 {
+  margin-bottom: var(--gap);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+  margin-top: var(--gap);
+}
+
+/* La rangée de boutons d'un filtre occupe toute la largeur, sous les champs */
+.filters > .row {
+  grid-column: 1 / -1;
+}
+
+/* 5. Composants ---------------------------------------------------------- */
+
+/* Carte : bloc blanc arrondi */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: var(--gap);
+}
+
+.card > h1:first-child,
+.card > h2:first-child {
+  margin-top: 0;
+}
+
+.card-sm {
+  max-width: 400px;
+  margin: 3rem auto 0;
+}
+
+.card-md {
+  max-width: 640px;
+  margin-inline: auto;
+}
+
+/* Boutons (<button> et liens .btn) */
+button,
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0.5rem 1rem;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.25;
+  white-space: nowrap;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+button:hover,
+.btn:hover {
+  background: var(--color-row-hover);
+  border-color: #94a3b8;
+  text-decoration: none;
+}
+
+button:focus-visible,
+.btn:focus-visible,
+a:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
+}
+
+.btn-danger {
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background: var(--color-danger-dark);
+  border-color: var(--color-danger-dark);
+}
+
+/* Tableaux */
+.table-wrap {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.table-wrap > h1,
+.table-wrap > h2 {
+  padding: 1.25rem 1.5rem 0;
+}
+
+.table-wrap > p {
+  padding: 0 1.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+th {
+  background: #f8fafc;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Première et dernière colonne alignées avec le contenu de la carte */
+.table-wrap th:first-child,
+.table-wrap td:first-child {
+  padding-left: 1.5rem;
+}
+
+.table-wrap th:last-child,
+.table-wrap td:last-child {
+  padding-right: 1.5rem;
+}
+
+/* Cellule d'actions (boutons côte à côte) : reste une vraie cellule de tableau */
+td.row {
+  display: table-cell;
+  white-space: nowrap;
+}
+
+td.row > *,
+td.row form {
+  display: inline-block;
+  margin-right: 0.4rem;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover td {
+  background: var(--color-row-hover);
+}
+
+/* Fiche de détail : « libellé / valeur » */
+.card > table th {
+  width: 30%;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.9rem;
+}
+
+.table-spaced {
+  margin-top: var(--gap);
+}
+
+/* Badges de résultat */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--color-neutral-bg);
+  color: var(--color-neutral);
+}
+
+.badge::before {
+  content: "";
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.badge.ok {
+  background: var(--color-ok-bg);
+  color: var(--color-ok);
+}
+
+.badge.ko {
+  background: var(--color-ko-bg);
+  color: var(--color-ko);
+}
+
+/* Messages (succès / erreur) */
+.flash {
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  border-left: 4px solid currentColor;
+  margin-bottom: var(--gap);
+  font-weight: 500;
+}
+
+.flash.error {
+  background: var(--color-ko-bg);
+  color: var(--color-ko);
+}
+
+.flash.success {
+  background: var(--color-ok-bg);
+  color: var(--color-ok);
+}
+
+/* 6. Formulaires --------------------------------------------------------- */
+label {
+  display: block;
+  margin-top: var(--gap);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  margin-top: 0.3rem;
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
+input:disabled,
+select:disabled {
+  background: var(--color-bg);
+  color: var(--color-muted);
+}
+
+textarea {
+  resize: vertical;
+}
+
+input[type="hidden"] {
+  display: none;
+}
+
+/* Zone des boutons en bas d'un formulaire */
+.form-actions {
+  margin-top: 1.25rem;
+}
+
+/* Case à cocher avec son libellé sur une ligne */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+  font-weight: 400;
+}
+
+.checkbox-label input {
+  width: auto;
+  margin: 0;
+}
+
+/* 7. Tableau de bord ----------------------------------------------------- */
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--gap);
+  margin-bottom: 0.75rem;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.15rem;
+  margin-bottom: 0;
+  border-top: 4px solid var(--color-border-strong);
+}
+
+/* Couleur de l'accent selon l'ordre des indicateurs : total, en ligne, hors ligne, jamais, disponibilité */
+.kpi:nth-child(1) { border-top-color: var(--color-primary); }
+.kpi:nth-child(2) { border-top-color: #22c55e; }
+.kpi:nth-child(3) { border-top-color: #ef4444; }
+.kpi:nth-child(4) { border-top-color: #94a3b8; }
+.kpi:nth-child(5) { border-top-color: var(--color-accent); }
+
+.kpi .muted {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.kpi-value {
+  font-size: 2.1rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.ok-text {
+  color: var(--color-ok);
+}
+
+.ko-text {
+  color: var(--color-ko);
+}
+
+/* 8. Utilitaires --------------------------------------------------------- */
+.muted {
+  color: var(--color-muted);
+}
+
+/* 9. Adaptation aux petits écrans ---------------------------------------- */
+@media (max-width: 640px) {
+  main {
+    padding: 0 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .site-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .site-header nav a {
+    min-height: 2.5rem;
+    padding: 0 0.6rem;
+  }
+
+  .card {
+    padding: 1rem;
+  }
+
+  .table-wrap > h1,
+  .table-wrap > h2 {
+    padding: 1rem 1rem 0;
+  }
+
+  th,
+  td {
+    padding: 0.55rem 0.6rem;
+  }
+
+  .card > table th {
+    width: auto;
+  }
+}
