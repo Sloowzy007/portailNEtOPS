@@ -1,0 +1,40 @@
+site_name: Portail NetOps
+site_description: Portail web de gestion et de supervision d'une infrastructure réseau (R504)
+docs_dir: documentation
+site_dir: site
+theme:
+  name: material
+  language: fr
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle:
+        icon: material/weather-night
+        name: Mode sombre
+    - scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Mode clair
+  features:
+    - navigation.sections
+    - navigation.top
+    - content.code.copy
+nav:
+  - Présentation: index.md
+  - Cahier des charges: cahier-des-charges.md
+  - Architecture: architecture.md
+  - Base de données: base-de-donnees.md
+  - Installation et déploiement: installation.md
+  - Sécurité: securite.md
+  - Tests: tests.md
+  - Guide utilisateur: guide-utilisateur.md
+  - Organisation du projet: organisation.md
+  - Bilan et perspectives: bilan.md
+
+markdown_extensions:
+  - admonition
+  - tables
+  - fenced_code
+  - attr_list
+  - md_in_html
